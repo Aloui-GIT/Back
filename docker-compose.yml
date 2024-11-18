@@ -1,35 +1,64 @@
 version: '3.8'
 
 services:
-  app:
-    image: generateur-formulaire:latest # Image de votre application
+  # Interface 1 (Angular Frontend)
+  interface1:
     build:
-      context: .
+      context: ./interface1
       dockerfile: Dockerfile
-    container_name: generateur-formulaire-app
+    container_name: angular-interface1
     ports:
-      - "8080:8080" # Exposez le port de votre application
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/generateur_formulaire
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-    depends_on:
-      - db # Dépend de la base de données MySQL
+      - "4200:80" # Interface 1 accessible sur localhost:4200
+    networks:
+      - app-network
 
-  db:
-    image: mysql:8.0 # Image officielle MySQL
-    container_name: generateur-formulaire-db
-    restart: always
+  # Interface 2 (Angular Frontend)
+  interface2:
+    build:
+      context: ./interface2
+      dockerfile: Dockerfile
+    container_name: angular-interface2
     ports:
-      - "3306:3306" # Exposez le port MySQL
+      - "4300:80" # Interface 2 accessible sur localhost:4300
+    networks:
+      - app-network
+
+  # Backend (Spring Boot)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: spring-backend
+    ports:
+      - "8080:8080" # Backend accessible sur localhost:8080
     environment:
-      MYSQL_DATABASE: generateur_formulaire
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: appuser
-      MYSQL_PASSWORD: apppassword
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/db_name
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpassword
+    depends_on:
+      - mysql-db
+    networks:
+      - app-network
+
+  # Base de données (MySQL)
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-database
+    ports:
+      - "3306:3306" # Base de données accessible sur localhost:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: db_name
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
     volumes:
-      - mysql-data:/var/lib/mysql # Stockage des données MySQL
+      - mysql-data:/var/lib/mysql
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   mysql-data:
