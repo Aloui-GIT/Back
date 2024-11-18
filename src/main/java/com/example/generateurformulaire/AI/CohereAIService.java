@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -25,6 +24,9 @@ public class CohereAIService {
     private static final String API_URL = "https://api.cohere.ai/generate";
     private static final Logger logger = LoggerFactory.getLogger(CohereAIService.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final int MAX_SUGGESTION_LENGTH = 255; // Adjust this based on your DB constraints
+    private static final int MAX_SUGGESTIONS_COUNT = 3; // Limit the number of suggestions
 
     // Generate suggestions method
     public String generateSuggestions(String title, String description, String question) throws IOException, ParseException {
@@ -39,7 +41,7 @@ public class CohereAIService {
         Map<String, Object> requestPayload = new HashMap<>();
         requestPayload.put("model", "command-xlarge-nightly");
         requestPayload.put("prompt", prompt);
-        requestPayload.put("max_tokens", 150);
+        requestPayload.put("max_tokens", 150); // Adjust if necessary
         requestPayload.put("temperature", 0.7);
 
         // Convert the Map to a JSON string
@@ -102,11 +104,16 @@ public class CohereAIService {
             int count = 0;
 
             for (String suggestion : suggestions) {
-                if (!suggestion.trim().isEmpty() && count < 3) { // Check for non-empty suggestions
+                if (!suggestion.trim().isEmpty() && count < MAX_SUGGESTIONS_COUNT) { // Check for non-empty suggestions
+                    // Limit each suggestion to a maximum length
+                    String trimmedSuggestion = suggestion.trim();
+                    if (trimmedSuggestion.length() > MAX_SUGGESTION_LENGTH) {
+                        trimmedSuggestion = trimmedSuggestion.substring(0, MAX_SUGGESTION_LENGTH);
+                    }
                     if (limitedSuggestions.length() > 0) {
                         limitedSuggestions.append("\n"); // Append a newline for separation
                     }
-                    limitedSuggestions.append(suggestion.trim()); // Append trimmed suggestions
+                    limitedSuggestions.append(trimmedSuggestion); // Append trimmed suggestions
                     count++;
                 }
             }
@@ -120,6 +127,4 @@ public class CohereAIService {
 
         throw new IOException("Error: Invalid response format received from Cohere API. Response: " + responseBody);
     }
-
-
 }

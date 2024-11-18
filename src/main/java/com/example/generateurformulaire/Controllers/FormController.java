@@ -3,6 +3,8 @@ package com.example.generateurformulaire.Controllers;
 import com.example.generateurformulaire.DTO.CommentDto;
 import com.example.generateurformulaire.entities.Comment;
 import com.example.generateurformulaire.entities.Form;
+import com.example.generateurformulaire.repository.FormRepository;
+import com.example.generateurformulaire.repository.LikeDislikeRepository;
 import com.example.generateurformulaire.services.FormService;
 import jakarta.annotation.PostConstruct;
 import jakarta.xml.bind.DatatypeConverter;
@@ -37,7 +39,11 @@ public class FormController {
 
     @Autowired
     private FormService formService;
+    @Autowired
+    private FormRepository formRepository;
 
+    @Autowired
+    private LikeDislikeRepository likeDislikeRepository;
    @PostMapping("/createBlankForm")
     public ResponseEntity<Form> createBlankForm(@RequestParam Long adminId) {
         Form createdForm = formService.createBlankForm(adminId);
@@ -232,5 +238,15 @@ public class FormController {
     public ResponseEntity<?> setMaxSubmissions(@PathVariable Long formId, @PathVariable int maxSubmissions) {
         formService.updateMaxSubmissions(formId, maxSubmissions);
         return ResponseEntity.ok().body(Collections.singletonMap("message", "Maximum submissions updated successfully"));
+    }
+
+    @GetMapping("/{formId}/likes-dislikes")
+    public Map<String, Integer> getLikesAndDislikes(@PathVariable Long formId) {
+        Form form = formRepository.findById(formId).orElseThrow(() -> new RuntimeException("Form not found"));
+
+        int likeCount = likeDislikeRepository.countLikesByForm(form);
+        int dislikeCount = likeDislikeRepository.countDislikesByForm(form);
+
+        return Map.of("likes", likeCount, "dislikes", dislikeCount);
     }
 }
