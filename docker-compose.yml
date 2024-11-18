@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  app:
+    image: generateur-formulaire:latest # Image de votre application
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: generateur-formulaire-app
+    ports:
+      - "8080:8080" # Exposez le port de votre application
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/generateur_formulaire
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - db # Dépend de la base de données MySQL
+
+  db:
+    image: mysql:8.0 # Image officielle MySQL
+    container_name: generateur-formulaire-db
+    restart: always
+    ports:
+      - "3306:3306" # Exposez le port MySQL
+    environment:
+      MYSQL_DATABASE: generateur_formulaire
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    volumes:
+      - mysql-data:/var/lib/mysql # Stockage des données MySQL
+
+volumes:
+  mysql-data:
