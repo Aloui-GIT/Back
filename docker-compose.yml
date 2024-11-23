@@ -41,18 +41,17 @@ services:
       - app-network
 
   # Base de données (MySQL)
-  mysql-db:
-    image: mysql:8.0
-    container_name: mysql-database
+  mysql_db:
+    image: mysql:latest
+    container_name: mysqldb
     ports:
-      - "3306:3306" # Base de données accessible sur localhost:3306
+      - "3306:3306"
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: db_name
-      MYSQL_USER: user
-      MYSQL_PASSWORD: userpassword
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=devops
     volumes:
-      - mysql-data:/var/lib/mysql
+      - ./data.sql:/docker-entrypoint-initdb.d/data.sql
     networks:
       - app-network
 
