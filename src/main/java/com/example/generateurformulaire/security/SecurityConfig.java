@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/questions/**").permitAll()
                         .requestMatchers("/api/steps/**").permitAll()
                         .requestMatchers("/api/verify-email").permitAll()
+                        .requestMatchers("/api/openai/**").permitAll()
                         .requestMatchers("/api/v1/auth/verify").permitAll()
                         .requestMatchers("/api/inputs/**").permitAll()
                         .requestMatchers("/api/forms/**").permitAll()

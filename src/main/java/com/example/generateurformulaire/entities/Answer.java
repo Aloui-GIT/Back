@@ -15,6 +15,7 @@ public class Answer {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long idAnswer;
+    @Lob
     private String Answer;
 
     @ManyToOne

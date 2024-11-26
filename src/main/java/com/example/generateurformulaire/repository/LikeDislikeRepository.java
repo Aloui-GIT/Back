@@ -22,4 +22,6 @@ public interface LikeDislikeRepository extends JpaRepository<LikeDislike, Long> 
 
     @Query("SELECT COUNT(ld) FROM LikeDislike ld WHERE ld.form = :form AND ld.isLike = false")
     int countDislikesByForm(@Param("form") Form form);
+
+
 }
