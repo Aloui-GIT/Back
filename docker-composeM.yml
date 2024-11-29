@@ -1,1 +1,34 @@
+version: '3'
 
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prom
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+    networks:
+      - my-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "4000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - my-network
+
+networks:
+  my-network:
+  
+volumes:
+  prometheus_data:
+  grafana_data:
