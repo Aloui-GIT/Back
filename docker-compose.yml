@@ -1,4 +1,5 @@
 version: '3'
+
 services:
   mysql_db:
     image: mysql:latest
@@ -15,7 +16,7 @@ services:
       - my-network
 
   spring_boot_app:
-    image: alouiyassine/apprepo:back  # Update this to your own back image
+    image: alouiyassine/new-back-image  # Updated Docker image name
     container_name: devops_project_spring
     ports:
       - "8082:8082"
@@ -31,3 +32,4 @@ services:
 
 networks:
   my-network:
+    driver: bridge
