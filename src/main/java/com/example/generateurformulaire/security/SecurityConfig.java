@@ -38,10 +38,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())  // Allows all CORS requests
+                .csrf(AbstractHttpConfigurer::disable)  // Disables CSRF protection
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/api/authentication/**").permitAll() // Permit sign-up endpoint
+                        .requestMatchers("/actuator/prometheus").permitAll()  // Allow Prometheus scraping without authentication
+                        .requestMatchers("/api/authentication/**").permitAll()  // Permit sign-up endpoint
                         .requestMatchers("/api/answers/**").permitAll()
                         .requestMatchers("/api/questions/**").permitAll()
                         .requestMatchers("/api/steps/**").permitAll()
@@ -54,13 +55,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").permitAll()
                         .requestMatchers("/api/submissions/**").permitAll()
                         .requestMatchers("/api/user/**").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/actuator/prometheus").permitAll()  // Ensure Prometheus is permitted
+                        .anyRequest().authenticated()  // Require authentication for all other requests
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(daoAuthenticationProvider())
-                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // Stateless session
+                .authenticationProvider(daoAuthenticationProvider())  // Custom authentication provider
+                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)  // JWT filter
                 .exceptionHandling(e -> e
-                        .authenticationEntryPoint(jwtAuthenticationHttp403)
+                        .authenticationEntryPoint(jwtAuthenticationHttp403)  // Handle authentication errors
                 );
 
         return http.build();
@@ -73,14 +75,14 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder();  // Use BCrypt for password encoding
     }
 
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(customUserDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
+        provider.setUserDetailsService(customUserDetailsService);  // Use custom user details service
+        provider.setPasswordEncoder(passwordEncoder());  // Use BCrypt password encoder
         return provider;
     }
 
@@ -90,8 +92,8 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("*")  // Allows requests from all origins
-                        .allowedMethods("*"); // Allows all HTTP methods (GET, POST, PUT, etc.)
+                        .allowedOrigins("*")  // Allow requests from any origin
+                        .allowedMethods("*");  // Allow all HTTP methods (GET, POST, PUT, etc.)
             }
         };
     }
